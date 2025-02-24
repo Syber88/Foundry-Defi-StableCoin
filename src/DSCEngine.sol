@@ -24,7 +24,7 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine__NeedsMoreThanZero();
     error DSCEngine__TokenAdressesAndPriceFeedAddressMustBeSameLength();
     error DSCEngine__TokenNotAllowed();
-    error DSCEngine__TransferFailed(); 
+    error DSCEngine__TransferFailed();
 
     //////////////////////
     // State Variables  //
@@ -32,13 +32,16 @@ contract DSCEngine is ReentrancyGuard {
 
     mapping(address token => address priceFeed) private s_priceFeeds;
     mapping(address user => mapping(address token => uint256 amount)) private s_collateralDeposited;
+    mapping(address user => uint256 amountDscMinted) private s_dscMinted;
     DecentralisedStableCoin private immutable i_dsc;
 
     //////////////
     // Events  //
     /////////////
 
-    event CollateraDeposited(address indexed sender, address indexed tokenCollateralAddress, uint256 indexed amountCollateral);
+    event CollateraDeposited(
+        address indexed sender, address indexed tokenCollateralAddress, uint256 indexed amountCollateral
+    );
 
     //////////////////
     // Modifiers    //
@@ -93,16 +96,45 @@ contract DSCEngine is ReentrancyGuard {
         s_collateralDeposited[msg.sender][tokenCollateralAddress] += amountCollateral;
         emit CollateraDeposited(msg.sender, tokenCollateralAddress, amountCollateral);
         bool success = IERC20(tokenCollateralAddress).transferFrom(msg.sender, address(this), amountCollateral);
-        if (!success){
+        if (!success) {
             revert DSCEngine__TransferFailed();
         }
-
     }
 
     function redeemCollateralForDsc() external {}
     function redeemCollateral() external {}
-    function mintDsc() external {}
+
+    /**
+     * 
+     * @param amountDscToMint Amount of Decentralised Stable Coin to mint
+     * @notice they must have more collateral value than the threshhold
+     */
+    function mintDsc(uint256 amountDscToMint) external moreThanZero(amountDscToMint) nonReentrant{
+        s_dscMinted[msg.sender] += amountDscToMint;
+        revertIfHealthFactorIsBroken(msg.sender);
+
+
+    }
     function burnDsc() external {}
     function liquidate() external {}
     function getHealthFactor() external view {}
+
+
+    ///////////////////////////////////
+    // Private & Internal view Functions  //
+    ///////////////////////////////////
+    /**
+     * Returns how close to liquidation a user is. If a user goes below 1 they will get liquidated
+     */
+
+    function _getAccountInformation(address user) private view returns(uint256 totalDscMinted, uint256 collateralValueInUsd){
+        
+    }
+    function _healthFactor(address user) internal view returns (uint256){
+
+    }
+
+    function _revertIfHealthFactorIsBroken(address user) internal view {
+
+    }
 }
