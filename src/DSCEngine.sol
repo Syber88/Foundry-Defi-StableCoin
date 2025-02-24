@@ -17,7 +17,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  *
  * Our DSC should always be "overCollateralised". At no point should the value of all the collateral be less than or equal to the value of all the DSC.
  */
-contract DSCEngine is ReentrancyGaurd {
+contract DSCEngine is ReentrancyGuard {
     //////////////////
     // Errors       //
     //////////////////
@@ -38,7 +38,7 @@ contract DSCEngine is ReentrancyGaurd {
     // Events  //
     /////////////
 
-    event CollateraDeposited(address indexed msg.sender, address indexed tokenCollateralAddress, uint256 indexed amountCollateral);
+    event CollateraDeposited(address indexed sender, address indexed tokenCollateralAddress, uint256 indexed amountCollateral);
 
     //////////////////
     // Modifiers    //
