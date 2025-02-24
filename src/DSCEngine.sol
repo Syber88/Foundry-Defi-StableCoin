@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {DecentralisedStableCoin} from "./DecentralisedStableCoin.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
@@ -46,7 +46,7 @@ contract DSCEngine is ReentrancyGuard {
 
     modifier moreThanZero(uint256 amount) {
         if (amount == 0) {
-            revert DSCEngine___NeedsMoreThanZero();
+            revert DSCEngine__NeedsMoreThanZero();
         }
         _;
     }
@@ -92,7 +92,7 @@ contract DSCEngine is ReentrancyGuard {
     {
         s_collateralDeposited[msg.sender][tokenCollateralAddress] += amountCollateral;
         emit CollateraDeposited(msg.sender, tokenCollateralAddress, amountCollateral);
-        bool success IERC20(tokenCollateralAddress).transferFrom(msg.sender, address(this), amountCollateral)
+        bool success = IERC20(tokenCollateralAddress).transferFrom(msg.sender, address(this), amountCollateral);
         if (!success){
             revert DSCEngine__TransferFailed();
         }
