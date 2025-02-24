@@ -6,7 +6,6 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/Ag
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-
 /**
  * @title DSCEngine
  * @author 0xsyber88
@@ -20,9 +19,11 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  * Our DSC should always be "overCollateralised". At no point should the value of all the collateral be less than or equal to the value of all the DSC.
  */
 contract DSCEngine is ReentrancyGuard {
+    
     //////////////////
     // Errors       //
     //////////////////
+
     error DSCEngine__NeedsMoreThanZero();
     error DSCEngine__TokenAdressesAndPriceFeedAddressMustBeSameLength();
     error DSCEngine__TokenNotAllowed();
@@ -34,7 +35,6 @@ contract DSCEngine is ReentrancyGuard {
 
     uint256 private constant FEED_PRECISION = 1e10;
     uint256 private constant PRECISION = 1e18;
-
 
     mapping(address token => address priceFeed) private s_priceFeeds;
     mapping(address user => mapping(address token => uint256 amount)) private s_collateralDeposited;
@@ -114,65 +114,55 @@ contract DSCEngine is ReentrancyGuard {
     function redeemCollateral() external {}
 
     /**
-     * 
+     *
      * @param amountDscToMint Amount of Decentralised Stable Coin to mint
      * @notice they must have more collateral value than the threshhold
      */
-    function mintDsc(uint256 amountDscToMint) external moreThanZero(amountDscToMint) nonReentrant{
+    function mintDsc(uint256 amountDscToMint) external moreThanZero(amountDscToMint) nonReentrant {
         s_dscMinted[msg.sender] += amountDscToMint;
         revertIfHealthFactorIsBroken(msg.sender);
-
-
     }
+
     function burnDsc() external {}
     function liquidate() external {}
     function getHealthFactor() external view {}
-
 
     ////////////////////////////////////////
     // Private & Internal view Functions  //
     ////////////////////////////////////////
 
-
     /**
      * Returns how close to liquidation a user is. If a user goes below 1 they will get liquidated
      */
-    function _getAccountInformation(address user) 
-    private 
-    view 
-    returns(uint256 totalDscMinted, uint256 collateralValueInUsd)
+    function _getAccountInformation(address user)
+        private
+        view
+        returns (uint256 totalDscMinted, uint256 collateralValueInUsd)
     {
         totalDscMinted = s_dscMinted[user];
         collateralValueInUsd = getAccountCollateralValue(user);
-
-    }
-    function _healthFactor(address user) internal view returns (uint256){
-
     }
 
-    function _revertIfHealthFactorIsBroken(address user) internal view {
+    function _healthFactor(address user) internal view returns (uint256) {}
 
-    }
+    function _revertIfHealthFactorIsBroken(address user) internal view {}
 
     ////////////////////////////////////////
     // Public & External view Functions   //
     ////////////////////////////////////////
 
-    function getAccountCollateralValue(address user) public view returns(uint256 totalCollateralValueInUsd){
-        for(uint256 i = 0; i < s_collateralTokens.length; i++) {
+    function getAccountCollateralValue(address user) public view returns (uint256 totalCollateralValueInUsd) {
+        for (uint256 i = 0; i < s_collateralTokens.length; i++) {
             address token = s_collateralTokens[i];
             uint256 amount = s_collateralDeposited[user][token];
             totalCollateralValueInUsd += getUsdValue(token, amount);
         }
         return totalCollateralValueInUsd;
-        
-
     }
 
-    function getUsdValue(address token, uint256 amount) public view returns(uint256) {
+    function getUsdValue(address token, uint256 amount) public view returns (uint256) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds(token));
         (, uint256 price,,,) = priceFeed.latestRoundData();
-        return ((uint256 (price) * FEED_PRECISION) * amount) / PRECISION;
-
+        return ((uint256(price) * FEED_PRECISION) * amount) / PRECISION;
     }
 }
