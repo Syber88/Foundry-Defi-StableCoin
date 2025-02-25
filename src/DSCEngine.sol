@@ -19,7 +19,6 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  * Our DSC should always be "overCollateralised". At no point should the value of all the collateral be less than or equal to the value of all the DSC.
  */
 contract DSCEngine is ReentrancyGuard {
-
     //////////////////
     // Errors       //
     //////////////////
@@ -148,7 +147,6 @@ contract DSCEngine is ReentrancyGuard {
     }
 
     function _healthFactor(address user) internal view returns (uint256) {
-
         (uint256 totalDscMinted, uint256 collateralValueInUsd) = _getAccountInformation(user);
         uint256 collateralAdjustedForThreshold = (collateralValueInUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
         return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
@@ -157,11 +155,9 @@ contract DSCEngine is ReentrancyGuard {
     //Check if they have enough collateral and revert if they do not.
     function _revertIfHealthFactorIsBroken(address user) internal view {
         uint256 userHealthFactor = _healthFactor(user);
-        if(userHealthFactor < MIN_HEALTH_FACTOR){
+        if (userHealthFactor < MIN_HEALTH_FACTOR) {
             revert DSCEngine__BreaksHealthFactor();
         }
-
-
     }
 
     ////////////////////////////////////////
@@ -178,8 +174,8 @@ contract DSCEngine is ReentrancyGuard {
     }
 
     function getUsdValue(address token, uint256 amount) public view returns (uint256) {
-        AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds(token));
-        (, uint256 price,,,) = priceFeed.latestRoundData();
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
+        (, int256 price,,,) = priceFeed.latestRoundData();
         return ((uint256(price) * FEED_PRECISION) * amount) / PRECISION;
     }
 }
