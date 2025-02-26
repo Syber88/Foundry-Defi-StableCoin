@@ -182,7 +182,16 @@ contract DSCEngine is ReentrancyGuard {
         _revertIfHealthFactorIsBroken(msg.sender); // will refactor and remove it if unnecessary
     }
 
-    function liquidate() external {}
+    // if someone is almost undercollateralised you will get paid to liquidate them
+    /**
+     * @param collateral ERC20 collateral address to liquidate from the user
+     * @param user User who has broken the health factor which should always be above MIN_HEALTH_FACTOR 
+     * @param debtToCover the amount of DSC you want to burn to improve the users health factor
+     * @notice A user can be partially liquidated
+     */
+    function liquidate(address collateral, address user, uint256 debtToCover) external moreThanZero(debtToCover){
+
+    }
     function getHealthFactor() external view {}
 
     ////////////////////////////////////////
