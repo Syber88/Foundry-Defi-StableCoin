@@ -29,6 +29,7 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine__TransferFailed();
     error DSCEngine__BreaksHealthFactor();
     error DSCEngine__MintFailed();
+    error DSCEngine__HealthFactorOkay();
 
     //////////////////////
     // State Variables  //
@@ -38,7 +39,8 @@ contract DSCEngine is ReentrancyGuard {
     uint256 private constant PRECISION = 1e18;
     uint256 private constant LIQUIDATION_THRESHOLD = 50;
     uint256 private constant LIQUIDATION_PRECISION = 100;
-    uint256 private constant MIN_HEALTH_FACTOR = 1;
+    uint256 private constant MIN_HEALTH_FACTOR = 1e18;
+    uint256 private constant LIQUIDATION_BONUS = 10 ;//10%
 
     mapping(address token => address priceFeed) private s_priceFeeds;
     mapping(address user => mapping(address token => uint256 amount)) private s_collateralDeposited;
@@ -187,9 +189,23 @@ contract DSCEngine is ReentrancyGuard {
      * @param collateral ERC20 collateral address to liquidate from the user
      * @param user User who has broken the health factor which should always be above MIN_HEALTH_FACTOR
      * @param debtToCover the amount of DSC you want to burn to improve the users health factor
-     * @notice A user can be partially liquidated
+     * @notice A user can be partially liquidated. Assumes protocol will always be 200% over collateralised
      */
-    function liquidate(address collateral, address user, uint256 debtToCover) external moreThanZero(debtToCover) {}
+    function liquidate(address collateral, address user, uint256 debtToCover)
+        external
+        moreThanZero(debtToCover)
+        nonReentrant
+    {
+        uint256 startingUserHealthFactor = _healthFactor(user);
+        if (startingUserHealthFactor >= MIN_HEALTH_FACTOR) {
+            revert DSCEngine__HealthFactorOkay();
+        }
+
+        uint256 tokenAmountFromDebtCovered = getTokenAmountFromUsd(collateral, debtToCover);
+        uint256 bonusCollateral = (tokenAmountFromDebtCovered * LIQUIDATION_BONUS) / LIQUIDATION_PRECISION; //Incentive
+    }
+
+
     function getHealthFactor() external view {}
 
     ////////////////////////////////////////
@@ -224,7 +240,13 @@ contract DSCEngine is ReentrancyGuard {
 
     ////////////////////////////////////////
     // Public & External view Functions   //
-    ////////////////////////////////////////
+    ////////////////////////////////////////\
+
+    function getTokenAmountFromUsd(address token, uint256 usdAmountInWei) public view returns(uint256){
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
+        (, int256 price,,,) = priceFeed.latestRoundData();
+        return (usdAmountInWei * PRECISION) / (uint256(price) * FEED_PRECISION);
+    }
 
     function getAccountCollateralValue(address user) public view returns (uint256 totalCollateralValueInUsd) {
         for (uint256 i = 0; i < s_collateralTokens.length; i++) {
