@@ -54,6 +54,8 @@ contract DSCEngine is ReentrancyGuard {
     event CollateraDeposited(
         address indexed sender, address indexed tokenCollateralAddress, uint256 indexed amountCollateral
     );
+    event CollateralRedeemed(address indexed sender, uint256 indexed amountCollateral, address indexed tokenCollateralAddress);
+
 
     //////////////////
     // Modifiers    //
@@ -130,7 +132,19 @@ contract DSCEngine is ReentrancyGuard {
     }
 
     function redeemCollateralForDsc() external {}
-    function redeemCollateral() external {}
+
+
+    function redeemCollateral(address tokenCollateralAddress, uint256 amountCollateral) external moreThanZero(amountCollateral) nonReentrant
+    {
+        s_collateralDeposited[msg.sender][tokenCollateralAddress] -= amountCollateral;
+        emit CollateralRedeemed(msg.sender, amountCollateral, tokenCollateralAddress);
+        bool success = IERC20(tokenCollateralAddress).transfer(msg.sender, amountCollateral);
+        if(!success) {
+            revert DSCEngine__TransferFailed();
+
+        }
+        _revertIfHealthFactorIsBroken(msg.sender);
+    }
 
     /**
      *
@@ -146,7 +160,15 @@ contract DSCEngine is ReentrancyGuard {
         }
     }
 
-    function burnDsc() external {}
+    function burnDsc(uint256 amount) public moreThanZero(amount){
+        s_dscMinted[msg.sender] -= amount;
+        bool success = i_dsc.transferFrom(msg.sender, address(this), amount);
+        if(!success) {
+            revert DSCEngine__TransferFailed();
+        }
+        i_dsc.burn(amount);
+         _revertIfHealthFactorIsBroken(msg.sender); // will refactor and remove it if unnecessary
+    }
     function liquidate() external {}
     function getHealthFactor() external view {}
 
