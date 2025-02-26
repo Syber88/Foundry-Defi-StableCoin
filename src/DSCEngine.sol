@@ -130,10 +130,10 @@ contract DSCEngine is ReentrancyGuard {
             revert DSCEngine__TransferFailed();
         }
     }
-    
+
     /**
      * @param tokenCollateralAddress Address of token collateral to redeem
-     * @param amountCollateral Amount of Collateral to redeem 
+     * @param amountCollateral Amount of Collateral to redeem
      * @param amountDscToBurn Amount of Decentralised Stable Coin to burn
      * Function burns DSC and redeems underlying collateral in one transaction
      */
@@ -185,13 +185,11 @@ contract DSCEngine is ReentrancyGuard {
     // if someone is almost undercollateralised you will get paid to liquidate them
     /**
      * @param collateral ERC20 collateral address to liquidate from the user
-     * @param user User who has broken the health factor which should always be above MIN_HEALTH_FACTOR 
+     * @param user User who has broken the health factor which should always be above MIN_HEALTH_FACTOR
      * @param debtToCover the amount of DSC you want to burn to improve the users health factor
      * @notice A user can be partially liquidated
      */
-    function liquidate(address collateral, address user, uint256 debtToCover) external moreThanZero(debtToCover){
-
-    }
+    function liquidate(address collateral, address user, uint256 debtToCover) external moreThanZero(debtToCover) {}
     function getHealthFactor() external view {}
 
     ////////////////////////////////////////
