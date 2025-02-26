@@ -8,8 +8,6 @@ import {DSCEngine} from "../../src/DSCEngine.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/ERC20Mock.sol";
 
-
-
 contract DSCEngineTest is Test {
     DeployDSC deployer;
     DecentralisedStableCoin dsc;
@@ -29,8 +27,6 @@ contract DSCEngineTest is Test {
         // vm.stopBroadcast();
         (ethUsdPriceFeed,, weth,,) = config.activeNetworkConfig();
         ERC20Mock(weth).mint(USER, STARTING_ERC20_BALANCE);
-
-
     }
 
     //////////////////
@@ -42,7 +38,6 @@ contract DSCEngineTest is Test {
         uint256 expectedUsd = 30000e18;
         uint256 actualUsd = dscEngine.getUsdValue(weth, ethAmount);
         assertEq(expectedUsd, actualUsd);
-
     }
 
     //////////////////////////////
@@ -55,8 +50,5 @@ contract DSCEngineTest is Test {
         vm.expectRevert(DSCEngine.DSCEngine__NeedsMoreThanZero.selector);
         dscEngine.depositCollateral(weth, 0);
         vm.stopPrank();
-
-
     }
-
 }
