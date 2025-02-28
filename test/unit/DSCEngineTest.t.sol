@@ -82,6 +82,7 @@ contract DSCEngineTest is Test {
         dscEngine.depositCollateral(address(amgToken), AMOUNT_COLLATERAL);
         vm.stopPrank();
     }
+
     modifier depositedCollateral() {
         vm.startPrank(USER);
         ERC20Mock(weth).approve(address(dscEngine), AMOUNT_COLLATERAL);
@@ -90,10 +91,10 @@ contract DSCEngineTest is Test {
         _;
     }
 
-    function testCanDepositCollateralAndGetInfo() public depositedCollateral{
+    function testCanDepositCollateralAndGetInfo() public depositedCollateral {
         (uint256 totalDscMinted, uint256 collateralValueInUsd) = dscEngine.getAccountInfo(USER);
 
-        uint256 expectedTotalDscMinted  = 0;
+        uint256 expectedTotalDscMinted = 0;
         uint256 expectedCollateralValueInUsd = dscEngine.getTokenAmountFromUsd(weth, collateralValueInUsd);
         assertEq(totalDscMinted, expectedTotalDscMinted);
         assertEq(AMOUNT_COLLATERAL, expectedCollateralValueInUsd);
