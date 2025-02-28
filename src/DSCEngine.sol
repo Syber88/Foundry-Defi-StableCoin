@@ -57,7 +57,10 @@ contract DSCEngine is ReentrancyGuard {
         address indexed sender, address indexed tokenCollateralAddress, uint256 indexed amountCollateral
     );
     event CollateralRedeemed(
-        address indexed sender, uint256 indexed amountCollateral, address indexed tokenCollateralAddress
+        address indexed redeemedFrom, 
+        address indexed redeemedTo,  
+        address indexed tokenCollateralAddress,
+        uint256 amountCollateral
     );
 
     //////////////////
@@ -151,12 +154,7 @@ contract DSCEngine is ReentrancyGuard {
         moreThanZero(amountCollateral)
         nonReentrant
     {
-        s_collateralDeposited[msg.sender][tokenCollateralAddress] -= amountCollateral;
-        emit CollateralRedeemed(msg.sender, amountCollateral, tokenCollateralAddress);
-        bool success = IERC20(tokenCollateralAddress).transfer(msg.sender, amountCollateral);
-        if (!success) {
-            revert DSCEngine__TransferFailed();
-        }
+        _redeemCollateral(tokenCollateralAddress, amountCollateral, msg.sender, msg.sender);
         _revertIfHealthFactorIsBroken(msg.sender);
     }
 
@@ -203,6 +201,8 @@ contract DSCEngine is ReentrancyGuard {
 
         uint256 tokenAmountFromDebtCovered = getTokenAmountFromUsd(collateral, debtToCover);
         uint256 bonusCollateral = (tokenAmountFromDebtCovered * LIQUIDATION_BONUS) / LIQUIDATION_PRECISION; //Incentive
+        uint256 totalCollateralToRedeem = tokenAmountFromDebtCovered + bonusCollateral;
+        _redeemCollateral(collateral, totalCollateralToRedeem, user, msg.sender);
     }
 
     function getHealthFactor() external view {}
@@ -210,6 +210,24 @@ contract DSCEngine is ReentrancyGuard {
     ////////////////////////////////////////
     // Private & Internal view Functions  //
     ////////////////////////////////////////
+
+    function _burnDsc()
+
+    function _redeemCollateral(
+        address tokenCollateralAddress, 
+        uint256 amountCollateral, 
+        address from, 
+        address to)
+        private
+    {
+        s_collateralDeposited[from][tokenCollateralAddress] -= amountCollateral;
+        emit CollateralRedeemed(from, to, tokenCollateralAddress, amountCollateral);
+        bool success = IERC20(tokenCollateralAddress).transfer(msg.sender, amountCollateral);
+        if (!success) {
+            revert DSCEngine__TransferFailed();
+        }
+        _revertIfHealthFactorIsBroken(msg.sender);
+    }
 
     /**
      * Returns how close to liquidation a user is. If a user goes below 1 they will get liquidated
