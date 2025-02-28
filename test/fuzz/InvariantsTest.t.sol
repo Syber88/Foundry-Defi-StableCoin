@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT 
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
 import {Test} from "forge-std/Test.sol";
@@ -20,10 +20,8 @@ contract OpenInvariantsTest is StdInvariant, Test {
     function setUp() external {
         deployer = new DeployDSC();
         (dsc, dscEngine, config) = deployer.run();
-        (,,weth, wbtc,) = config.activeNetworkConfig();
+        (,, weth, wbtc,) = config.activeNetworkConfig();
         targetContract(address(dscEngine));
-        
-
     }
 
     function invariant_protocolaMustHaveMoreValueThanTotalSupply() public view {
@@ -34,8 +32,6 @@ contract OpenInvariantsTest is StdInvariant, Test {
         uint256 wethValue = dscEngine.getUsdValue(weth, totalWethDeposited);
         uint256 wbtcValue = dscEngine.getUsdValue(wbtc, totalWbtcDeposited);
 
-        assert(wethValue + wbtcValue > totalSupply);
-
+        assert(wethValue + wbtcValue >= totalSupply);
     }
-
 }
