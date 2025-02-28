@@ -36,15 +36,14 @@ contract DSCEngineTest is Test {
     address[] public tokenAddresses;
     address[] public priceFeedAdresses;
 
-    function testRevertIfTokenLengthFoesNotMatchPriceFeeds() public{
+    function testRevertIfTokenLengthFoesNotMatchPriceFeeds() public {
         tokenAddresses.push(weth);
         priceFeedAdresses.push(ethUsdPriceFeed);
         priceFeedAdresses.push(btcUsdPriceFeed);
-        
+
         vm.expectRevert(DSCEngine.DSCEngine__TokenAdressesAndPriceFeedAddressMustBeSameLength.selector);
         new DSCEngine(tokenAddresses, priceFeedAdresses, address(dsc));
     }
-
 
     //////////////////
     // Price Test   //
@@ -57,6 +56,13 @@ contract DSCEngineTest is Test {
         assertEq(expectedUsd, actualUsd);
     }
 
+    function testGetTokenAmountFromUsd() public view {
+        uint256 usdAmount = 100 ether;
+        uint256 expectedWeth = 0.05 ether;
+        uint256 actualWeth = dscEngine.getTokenAmountFromUsd(weth, usdAmount);
+        assertEq(expectedWeth, actualWeth);
+    }
+
     //////////////////////////////
     // Deposit Collateral Test  //
     /////////////////////////////
@@ -67,5 +73,24 @@ contract DSCEngineTest is Test {
         vm.expectRevert(DSCEngine.DSCEngine__NeedsMoreThanZero.selector);
         dscEngine.depositCollateral(weth, 0);
         vm.stopPrank();
+    }
+
+    function testRevertsWithUnApprovedToken() public {
+        ERC20Mock amgToken = new ERC20Mock("AMG", "AMG", USER, STARTING_ERC20_BALANCE);
+        vm.startPrank(USER);
+        vm.expectRevert(DSCEngine.DSCEngine__TokenNotAllowed.selector);
+        dscEngine.depositCollateral(address(amgToken), AMOUNT_COLLATERAL);
+        vm.stopPrank();
+    }
+    modifier depositedCollateral() {
+        vm.startPrank(USER);
+        ERC20Mock(weth).approve(address(dscEngine), AMOUNT_COLLATERAL);
+        dscEngine.depositCollateral(weth, AMOUNT_COLLATERAL);
+        vm.stopPrank();
+        _;
+    }
+
+    function testCanDepositCollateralAndGetInfo() public depositedCollateral{
+        (uint256 totalDscMinted, uint256 collateralValueInUsd) = dscEngine.getAccountInfo(USER);
     }
 }
