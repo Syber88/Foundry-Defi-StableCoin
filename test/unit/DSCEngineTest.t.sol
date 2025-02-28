@@ -97,6 +97,6 @@ contract DSCEngineTest is Test {
         uint256 expectedTotalDscMinted = 0;
         uint256 expectedCollateralValueInUsd = dscEngine.getTokenAmountFromUsd(weth, collateralValueInUsd);
         assertEq(totalDscMinted, expectedTotalDscMinted);
-        assertEq(AMOUNT_COLLATERAL, expectedCollateralValueInUsd);
+        assertEq(AMOUNT_COLLATERAL , expectedCollateralValueInUsd);
     }
 }
