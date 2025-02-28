@@ -58,8 +58,8 @@ contract DSCEngine is ReentrancyGuard {
         address indexed sender, address indexed tokenCollateralAddress, uint256 indexed amountCollateral
     );
     event CollateralRedeemed(
-        address indexed redeemedFrom, 
-        address indexed redeemedTo,  
+        address indexed redeemedFrom,
+        address indexed redeemedTo,
         address indexed tokenCollateralAddress,
         uint256 amountCollateral
     );
@@ -202,7 +202,7 @@ contract DSCEngine is ReentrancyGuard {
         _burnDsc(debtToCover, user, msg.sender);
 
         uint256 endingUserHealthFactor = _healthFactor(user);
-        if(endingUserHealthFactor <= startingUserHealthFactor) {
+        if (endingUserHealthFactor <= startingUserHealthFactor) {
             revert DSCEngine__HealthFactorNotImproved();
         }
         _revertIfHealthFactorIsBroken(msg.sender);
@@ -221,14 +221,9 @@ contract DSCEngine is ReentrancyGuard {
             revert DSCEngine__TransferFailed();
         }
         i_dsc.burn(amountDscToBurn);
-    
     }
 
-    function _redeemCollateral(
-        address tokenCollateralAddress, 
-        uint256 amountCollateral, 
-        address from, 
-        address to)
+    function _redeemCollateral(address tokenCollateralAddress, uint256 amountCollateral, address from, address to)
         private
     {
         s_collateralDeposited[from][tokenCollateralAddress] -= amountCollateral;

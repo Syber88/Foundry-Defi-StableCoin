@@ -14,6 +14,7 @@ contract DSCEngineTest is Test {
     DSCEngine dscEngine;
     HelperConfig config;
     address ethUsdPriceFeed;
+    address btcUsdPriceFeed;
     address weth;
 
     address public USER = makeAddr("user");
@@ -25,9 +26,25 @@ contract DSCEngineTest is Test {
         // vm.startBroadcast();
         (dsc, dscEngine, config) = deployer.run();
         // vm.stopBroadcast();
-        (ethUsdPriceFeed,, weth,,) = config.activeNetworkConfig();
+        (ethUsdPriceFeed, btcUsdPriceFeed, weth,,) = config.activeNetworkConfig();
         ERC20Mock(weth).mint(USER, STARTING_ERC20_BALANCE);
     }
+
+    ////////////////////////
+    // Constructor Test   //
+    ////////////////////////
+    address[] public tokenAddresses;
+    address[] public priceFeedAdresses;
+
+    function testRevertIfTokenLengthFoesNotMatchPriceFeeds() public{
+        tokenAddresses.push(weth);
+        priceFeedAdresses.push(ethUsdPriceFeed);
+        priceFeedAdresses.push(btcUsdPriceFeed);
+        
+        vm.expectRevert(DSCEngine.DSCEngine__TokenAdressesAndPriceFeedAddressMustBeSameLength.selector);
+        new DSCEngine(tokenAddresses, priceFeedAdresses, address(dsc));
+    }
+
 
     //////////////////
     // Price Test   //
