@@ -44,6 +44,21 @@ contract Handler is Test {
         dscEngine.redeemCollateral(address(collateral), amountCollateral);
     }
 
+    function mintDsc(uint256 amount) public {
+        amount = bound(amount, 1, MAX_DEPOSIT_SIZE);
+        vm.startPrank(msg.sender);
+        (uint256 totalDscMinted, uint256 collateralValueInUsd) = dscEngine.getAccountInfo(msg.sender);
+        uint256 maxDscToMint = (uint256(collateralValueInUsd) / 2) - uint256(totalDscMinted);
+        amount = bound(amount, 0, uint256(maxDscToMint));
+        if (maxDscToMint < 0){
+            return;
+
+        }
+        dscEngine.mintDsc(amount);
+        vm.stopPrank();
+
+    }
+
     function _getCollateralfromSeed(uint256 collateralSeed) private view returns (ERC20Mock) {
         if (collateralSeed % 2 == 0) {
             return weth;
