@@ -22,7 +22,7 @@ contract Handler is Test {
         wbtc = ERC20Mock(collateralTokens[1]);
     }
 
-    function depostCollateral(uint256 collateralSeed, uint256 amountCollateral) public {
+    function depositCollateral(uint256 collateralSeed, uint256 amountCollateral) public {
         ERC20Mock collateral = _getCollateralfromSeed(collateralSeed);
         dscEngine.depositCollateral(address(collateral), amountCollateral);
     }
