@@ -11,6 +11,7 @@ contract Handler is Test {
     DecentralisedStableCoin dsc;
     ERC20Mock weth;
     ERC20Mock wbtc;
+    uint256 MAX_DEPOSIT_SIZE = type(uint96).max;
 
     constructor(DSCEngine _dsceEngine, DecentralisedStableCoin _dsc) {
         // contracts we want the handler to make calls to
@@ -20,11 +21,18 @@ contract Handler is Test {
         address[] memory collateralTokens = dscEngine.getCollateralTokens();
         weth = ERC20Mock(collateralTokens[0]);
         wbtc = ERC20Mock(collateralTokens[1]);
+
     }
 
     function depositCollateral(uint256 collateralSeed, uint256 amountCollateral) public {
         ERC20Mock collateral = _getCollateralfromSeed(collateralSeed);
+        amountCollateral = bound(amountCollateral, 1, MAX_DEPOSIT_SIZE);
+
+        vm.startPrank(msg.sender);
+        collateral.mint(msg.sender, amountCollateral);
+        collateral.approve(address(dscEngine), amountCollateral);
         dscEngine.depositCollateral(address(collateral), amountCollateral);
+        vm.stopPrank();
     }
 
     function _getCollateralfromSeed(uint256 collateralSeed) private view returns (ERC20Mock) {
