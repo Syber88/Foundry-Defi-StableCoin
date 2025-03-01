@@ -21,7 +21,6 @@ contract Handler is Test {
         address[] memory collateralTokens = dscEngine.getCollateralTokens();
         weth = ERC20Mock(collateralTokens[0]);
         wbtc = ERC20Mock(collateralTokens[1]);
-
     }
 
     function depositCollateral(uint256 collateralSeed, uint256 amountCollateral) public {
