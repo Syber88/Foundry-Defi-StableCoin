@@ -32,6 +32,7 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine__MintFailed();
     error DSCEngine__HealthFactorOkay();
     error DSCEngine__HealthFactorNotImproved();
+    
     //////////////////
     // Types        //
     //////////////////
