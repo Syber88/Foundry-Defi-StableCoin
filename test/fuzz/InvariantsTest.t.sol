@@ -40,8 +40,13 @@ contract OpenInvariantsTest is StdInvariant, Test {
         console.log("total supply: ", totalSupply);
         console.log("Times mint is called: ", handler.timesMintIsCalled());
 
-
-
         assert(wethValue + wbtcValue >= totalSupply);
     }
+
+    // function invariant_gettersShouldNotRevert() public {
+    //     dscEngine.getAccountInfo(USER);
+    //     dscEngine.getCollateralBalanceOfUser();
+    //     dscEngine.getCollateralTokens();
+    //     dscEngine.getUsdValue();
+    // }
 }
